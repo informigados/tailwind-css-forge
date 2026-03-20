@@ -5,7 +5,7 @@ description = "Backend local do Tailwind CSS Forge"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "cryptography>=45.0,<46.0",
+    "cryptography>=46.0.5,<47.0",
     "fastapi>=0.115,<1.0",
     "paramiko>=3.5,<4.0",
     "pydantic>=2.9,<3.0",

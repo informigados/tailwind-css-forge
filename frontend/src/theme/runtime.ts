@@ -16,23 +16,21 @@ function applyResolvedTheme(theme: ResolvedTheme) {
   document.documentElement.style.colorScheme = theme;
 }
 
-export function applyThemePreference(theme: string): ThemePreference {
-  const normalized: ThemePreference = theme === "light" || theme === "dark" ? theme : "system";
-
+export function applyThemePreference(theme: ThemePreference): ThemePreference {
   activeCleanup?.();
   activeCleanup = null;
 
-  if (normalized === "system" && typeof window !== "undefined" && typeof window.matchMedia === "function") {
+  if (theme === "system" && typeof window !== "undefined" && typeof window.matchMedia === "function") {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     const sync = () => applyResolvedTheme(resolveSystemTheme(mediaQuery));
     sync();
     mediaQuery.addEventListener("change", sync);
     activeCleanup = () => mediaQuery.removeEventListener("change", sync);
-    return normalized;
+    return theme;
   }
 
-  applyResolvedTheme(normalized === "light" ? "light" : "dark");
-  return normalized;
+  applyResolvedTheme(theme === "light" ? "light" : "dark");
+  return theme;
 }
 
 export function cleanupThemePreference() {

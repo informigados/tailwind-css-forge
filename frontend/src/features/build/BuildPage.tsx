@@ -63,7 +63,7 @@ export function BuildPage() {
       .catch((error: unknown) =>
         setMessage(error instanceof ApiError ? error.message : t("build.messageLoadFailed")),
       );
-  }, [projectId]);
+  }, [projectId, t]);
 
   useEffect(() => {
     if (!activeBuildId) {
@@ -135,7 +135,7 @@ export function BuildPage() {
       .getBuildLog(focusedBuildId)
       .then((payload) => setFocusedLog(payload.log))
       .catch(() => setFocusedLog(t("build.messageLogUnavailable")));
-  }, [focusedBuildId]);
+  }, [focusedBuildId, t]);
 
   const focusedBuild = useMemo(
     () => builds.find((build) => build.id === focusedBuildId) ?? null,

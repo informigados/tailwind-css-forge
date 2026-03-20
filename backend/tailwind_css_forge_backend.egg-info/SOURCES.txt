@@ -13,6 +13,7 @@ app/api/routes/i18n.py
 app/api/routes/projects.py
 app/api/routes/publish.py
 app/api/routes/settings.py
+app/api/routes/system.py
 app/api/websocket/__init__.py
 app/api/websocket/builds.py
 app/builders/__init__.py
@@ -59,6 +60,7 @@ app/schemas/i18n.py
 app/schemas/project.py
 app/schemas/publish.py
 app/schemas/settings.py
+app/schemas/system.py
 app/services/__init__.py
 app/services/analysis_service.py
 app/services/build_service.py
@@ -72,6 +74,7 @@ app/utils/__init__.py
 app/utils/archive.py
 app/utils/fs.py
 app/utils/hash.py
+app/utils/native_dialog.py
 app/utils/process.py
 app/utils/secrets.py
 app/utils/time.py
@@ -85,9 +88,11 @@ tests/test_api_security.py
 tests/test_builds.py
 tests/test_frontend_hosting.py
 tests/test_installer_bundle.py
+tests/test_play_cdn_converter.py
 tests/test_process_runner.py
 tests/test_project_import.py
 tests/test_publish.py
 tests/test_publishers_security.py
 tests/test_runtime_hardening.py
 tests/test_settings_history.py
+tests/test_system_api.py

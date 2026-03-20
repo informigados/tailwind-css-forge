@@ -140,6 +140,8 @@ export type PublishResult = {
   message: string;
 };
 
+import type { ThemePreference } from "theme/runtime";
+
 export type HealthStatus = {
   status: string;
   app: string;
@@ -162,7 +164,7 @@ export type PublishProfileInput = {
 
 export type AppSettings = {
   language: string;
-  theme: string;
+  theme: ThemePreference;
   default_workspace_path: string;
   default_exports_path: string;
   backup_before_build: boolean;

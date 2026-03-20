@@ -4,7 +4,7 @@ Version: 0.1.0
 Summary: Backend local do Tailwind CSS Forge
 Requires-Python: >=3.12
 Description-Content-Type: text/markdown
-Requires-Dist: cryptography<46.0,>=45.0
+Requires-Dist: cryptography<47.0,>=46.0.5
 Requires-Dist: fastapi<1.0,>=0.115
 Requires-Dist: paramiko<4.0,>=3.5
 Requires-Dist: pydantic<3.0,>=2.9

@@ -6,6 +6,7 @@ import { pickDirectory } from "desktop/runtime";
 import { useI18n } from "i18n/useI18n";
 import type { AppSettings } from "lib/types";
 import { api, ApiError } from "services/api";
+import type { ThemePreference } from "theme/runtime";
 
 const initialSettings: AppSettings = {
   language: "pt-BR",
@@ -114,7 +115,7 @@ export function SettingsPage() {
             <span className="forge-meta-label">{t("settings.theme")}</span>
             <select
               value={settings.theme}
-              onChange={(event) => updateField("theme", event.target.value)}
+              onChange={(event) => updateField("theme", event.target.value as ThemePreference)}
               className="forge-input px-4 py-3 text-sm"
             >
               <option value="system">{t("settings.theme.system")}</option>

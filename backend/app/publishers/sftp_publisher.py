@@ -62,7 +62,7 @@ class SftpPublisher:
 
         host_key_policy = config.get("sftp_host_key_policy", "trust_on_first_use")
         if host_key_policy not in {"strict", "trust_on_first_use"}:
-            raise RuntimeError("Politica de chave SFTP invalida.")
+            raise RuntimeError("Política de chave SFTP inválida.")
         if host_key_policy == "trust_on_first_use":
             self._seed_trust_on_first_use_host_key(
                 paramiko=paramiko,

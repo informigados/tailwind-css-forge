@@ -2,6 +2,8 @@
 
 This directory contains the native Tauri shell for Tailwind CSS Forge.
 
+The current desktop shell target is Windows. The repository keeps the web app and backend cross-platform, but the packaged native shell is intentionally aligned with the Windows distribution flow used by the project.
+
 ## 🎯 Purpose
 
 The desktop shell does not replace the Python launcher. It wraps the existing local runtime with:

@@ -9,7 +9,7 @@ type I18nContextValue = {
   locale: Locale;
   theme: ThemePreference;
   setLocale: (locale: string) => void;
-  setTheme: (theme: string) => void;
+  setTheme: (theme: ThemePreference) => void;
   t: (key: string, values?: Record<string, string | number>) => string;
 };
 
@@ -55,7 +55,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     setLocaleState(setActiveLocale(nextLocale));
   }
 
-  function handleSetTheme(nextTheme: string) {
+  function handleSetTheme(nextTheme: ThemePreference) {
     setThemeState(applyThemePreference(nextTheme));
   }
 
