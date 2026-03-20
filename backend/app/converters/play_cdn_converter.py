@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import re
+import ntpath
 from pathlib import Path
 
 from app.core.build_context import BuildContext
@@ -54,6 +55,11 @@ class PlayCdnConverter:
         }
 
     def _stylesheet_href(self, html_path: Path, stylesheet_path: Path) -> str:
+        html_drive = ntpath.splitdrive(str(html_path))[0].lower()
+        stylesheet_drive = ntpath.splitdrive(str(stylesheet_path))[0].lower()
+        if html_drive and stylesheet_drive and html_drive != stylesheet_drive:
+            return "/assets/css/app.css"
+
         try:
             relative = os.path.relpath(stylesheet_path, start=html_path.parent)
         except ValueError:

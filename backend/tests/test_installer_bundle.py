@@ -10,6 +10,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 PREPARE_SCRIPT = REPO_ROOT / "scripts" / "prepare_installer_bundle.py"
 RENDER_SCRIPT = REPO_ROOT / "scripts" / "render_installer_assets.py"
 VALIDATE_SCRIPT = REPO_ROOT / "scripts" / "validate_installer_bundle.py"
+NPM_COMMAND = "npm.cmd" if sys.platform.startswith("win") else "npm"
 
 
 def test_render_installer_assets() -> None:
@@ -28,12 +29,11 @@ def test_render_installer_assets() -> None:
 def test_prepare_and_validate_installer_bundle(tmp_path: Path) -> None:
     bundle_dir = tmp_path / "installer-bundle"
     frontend_build = subprocess.run(
-        ["npm", "run", "build"],
+        [NPM_COMMAND, "run", "build"],
         cwd=REPO_ROOT / "frontend",
         check=False,
         capture_output=True,
         text=True,
-        shell=True,
     )
     assert frontend_build.returncode == 0, frontend_build.stderr or frontend_build.stdout
 
@@ -56,13 +56,14 @@ def test_prepare_and_validate_installer_bundle(tmp_path: Path) -> None:
     assert validate.returncode == 0, validate.stderr or validate.stdout
 
     manifest = json.loads((bundle_dir / "installer-manifest.json").read_text(encoding="utf-8"))
+    metadata = json.loads((REPO_ROOT / "forge-product.json").read_text(encoding="utf-8"))
     assert (bundle_dir / "app" / "frontend" / "dist" / "index.html").exists()
     assert (bundle_dir / "forge-product.json").exists()
     assert (bundle_dir / "app" / "installer" / "inno" / "forge.version.iss").exists()
     assert (bundle_dir / "app" / "installer" / "pyinstaller" / "version_info.txt").exists()
     assert not (bundle_dir / "app" / "frontend" / "src").exists()
     assert not (bundle_dir / "app" / "backend" / "tests").exists()
-    assert manifest["version"] == "0.1.0"
+    assert manifest["version"] == metadata["version"]
 
     self_check = subprocess.run(
         [

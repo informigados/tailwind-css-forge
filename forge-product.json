@@ -3,7 +3,7 @@
   "app_slug": "tailwind-css-forge",
   "publisher": "Tailwind CSS Forge",
   "company_name": "Tailwind CSS Forge",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "bundle_format_version": 1,
   "windows": {
     "app_id": "{7E4B78F2-D29E-4A72-97DA-3576E8650B54}",
