@@ -1,0 +1,33 @@
+# UTF-8
+VSVersionInfo(
+  ffi=FixedFileInfo(
+    filevers=(0, 1, 0, 0),
+    prodvers=(0, 1, 0, 0),
+    mask=0x3F,
+    flags=0x0,
+    OS=0x40004,
+    fileType=0x1,
+    subtype=0x0,
+    date=(0, 0)
+  ),
+  kids=[
+    StringFileInfo(
+      [
+        StringTable(
+          '040904B0',
+          [
+            StringStruct('CompanyName', 'Tailwind CSS Forge'),
+            StringStruct('FileDescription', 'Tailwind CSS Forge launcher'),
+            StringStruct('FileVersion', '0.1.0'),
+            StringStruct('InternalName', 'Tailwind CSS Forge Launcher'),
+            StringStruct('OriginalFilename', 'Tailwind CSS Forge Launcher.exe'),
+            StringStruct('ProductName', 'Tailwind CSS Forge'),
+            StringStruct('ProductVersion', '0.1.0'),
+            StringStruct('Comments', 'Installer-ready launcher for tailwind-css-forge')
+          ]
+        )
+      ]
+    ),
+    VarFileInfo([VarStruct('Translation', [1033, 1200])])
+  ]
+)

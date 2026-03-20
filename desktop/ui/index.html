@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tailwind CSS Forge Desktop</title>
+    <link rel="stylesheet" href="./boot.css" />
+  </head>
+  <body>
+    <main class="boot-shell">
+      <section class="boot-panel">
+        <p class="eyebrow">Shell desktop</p>
+        <h1>Tailwind CSS Forge</h1>
+        <p class="summary">
+          Iniciando o backend local, validando o runtime e preparando a
+          superfície de controle.
+        </p>
+        <div class="status-card">
+          <div class="pulse" aria-hidden="true"></div>
+          <div>
+            <p class="label">Status</p>
+            <p id="boot-phase" class="value">Inicializando o runtime desktop</p>
+          </div>
+        </div>
+        <p id="boot-detail" class="detail">
+          O shell nativo está aguardando o serviço local ficar saudável.
+        </p>
+        <p id="boot-error" class="error" hidden></p>
+      </section>
+    </main>
+    <script src="./boot.js"></script>
+  </body>
+</html>

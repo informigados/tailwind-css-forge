@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tailwind CSS Forge">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1f1408"/>
+      <stop offset="100%" stop-color="#6d471d"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f5df9a" stop-opacity="0.34"/>
+      <stop offset="100%" stop-color="#f5df9a" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect x="34" y="34" width="444" height="444" rx="124" fill="url(#bg)" stroke="#c9973f" stroke-width="14"/>
+  <rect x="54" y="54" width="404" height="404" rx="106" fill="url(#glow)"/>
+  <text x="256" y="314" text-anchor="middle" font-size="248" font-family="Georgia, 'Times New Roman', serif" font-weight="700" fill="#fff4c8">F</text>
+</svg>

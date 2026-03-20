@@ -1,0 +1,36 @@
+[project]
+name = "tailwind-css-forge-backend"
+version = "0.1.0"
+description = "Backend local do Tailwind CSS Forge"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "cryptography>=45.0,<46.0",
+    "fastapi>=0.115,<1.0",
+    "paramiko>=3.5,<4.0",
+    "pydantic>=2.9,<3.0",
+    "uvicorn[standard]>=0.32,<1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "httpx>=0.28,<1.0",
+    "pytest>=8.3,<9.0",
+    "pytest-asyncio>=0.26,<1.0",
+    "ruff>=0.11,<1.0",
+]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"

@@ -1,0 +1,11 @@
+{
+  "$schema": "../gen/schemas/remote-schema.json",
+  "identifier": "remote-localhost",
+  "description": "Allow the main window to use selected Tauri APIs when Forge is loaded from the local backend URL.",
+  "windows": ["main"],
+  "remote": {
+    "urls": ["http://127.0.0.1:8433", "http://localhost:8433"]
+  },
+  "platforms": ["windows", "macOS", "linux"],
+  "permissions": ["dialog:default"]
+}
