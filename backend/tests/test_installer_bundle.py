@@ -13,6 +13,21 @@ VALIDATE_SCRIPT = REPO_ROOT / "scripts" / "validate_installer_bundle.py"
 NPM_COMMAND = "npm.cmd" if sys.platform.startswith("win") else "npm"
 
 
+def _ensure_frontend_dependencies() -> None:
+    node_modules = REPO_ROOT / "frontend" / "node_modules"
+    if node_modules.exists():
+        return
+
+    install = subprocess.run(
+        [NPM_COMMAND, "ci"],
+        cwd=REPO_ROOT / "frontend",
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert install.returncode == 0, install.stderr or install.stdout
+
+
 def test_render_installer_assets() -> None:
     render = subprocess.run(
         [sys.executable, str(RENDER_SCRIPT)],
@@ -28,6 +43,7 @@ def test_render_installer_assets() -> None:
 
 def test_prepare_and_validate_installer_bundle(tmp_path: Path) -> None:
     bundle_dir = tmp_path / "installer-bundle"
+    _ensure_frontend_dependencies()
     frontend_build = subprocess.run(
         [NPM_COMMAND, "run", "build"],
         cwd=REPO_ROOT / "frontend",
@@ -86,6 +102,7 @@ def test_prepare_and_validate_installer_bundle(tmp_path: Path) -> None:
 
 def test_source_launcher_prepare_only() -> None:
     launcher = REPO_ROOT / "scripts" / "launch_forge.py"
+    _ensure_frontend_dependencies()
     completed = subprocess.run(
         [sys.executable, str(launcher), "--prepare-only"],
         cwd=REPO_ROOT,
