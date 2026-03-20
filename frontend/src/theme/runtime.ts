@@ -3,11 +3,12 @@ export type ResolvedTheme = "dark" | "light";
 
 let activeCleanup: (() => void) | null = null;
 
-function resolveSystemTheme(): ResolvedTheme {
+function resolveSystemTheme(mediaQuery?: MediaQueryList): ResolvedTheme {
   if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
     return "dark";
   }
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  const resolvedQuery = mediaQuery ?? window.matchMedia("(prefers-color-scheme: dark)");
+  return resolvedQuery.matches ? "dark" : "light";
 }
 
 function applyResolvedTheme(theme: ResolvedTheme) {
@@ -23,7 +24,7 @@ export function applyThemePreference(theme: string): ThemePreference {
 
   if (normalized === "system" && typeof window !== "undefined" && typeof window.matchMedia === "function") {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const sync = () => applyResolvedTheme(mediaQuery.matches ? "dark" : "light");
+    const sync = () => applyResolvedTheme(resolveSystemTheme(mediaQuery));
     sync();
     mediaQuery.addEventListener("change", sync);
     activeCleanup = () => mediaQuery.removeEventListener("change", sync);

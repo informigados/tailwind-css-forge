@@ -41,7 +41,7 @@ class FakePolicy:
 
 class FakeSftp:
     def close(self) -> None:
-        return None
+        pass
 
 
 class FakeSshClient:
@@ -225,10 +225,15 @@ def test_sftp_publisher_supports_trust_on_first_use(monkeypatch, tmp_path: Path)
     seed_calls: list[tuple[Path, str, int]] = []
 
     publisher = SftpPublisher()
+
+    def seed_stub(*, paramiko, host_keys_path: Path, host: str, port: int) -> None:
+        _ = paramiko
+        seed_calls.append((host_keys_path, host, port))
+
     monkeypatch.setattr(
         publisher,
         "_seed_trust_on_first_use_host_key",
-        lambda *, paramiko, host_keys_path, host, port: seed_calls.append((host_keys_path, host, port)),
+        seed_stub,
     )
     client, sftp = publisher._connect(
         {

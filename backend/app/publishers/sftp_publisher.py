@@ -137,4 +137,9 @@ class SftpPublisher:
             try:
                 sftp.mkdir(current)
             except OSError:
-                pass
+                try:
+                    sftp.stat(current)
+                except OSError as stat_error:
+                    raise RuntimeError(
+                        f"Não foi possível preparar o diretório remoto SFTP: {current}",
+                    ) from stat_error

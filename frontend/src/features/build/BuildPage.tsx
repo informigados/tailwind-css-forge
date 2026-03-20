@@ -142,11 +142,6 @@ export function BuildPage() {
     [builds, focusedBuildId],
   );
 
-  const activeBuild = useMemo(
-    () => builds.find((build) => build.id === activeBuildId) ?? null,
-    [builds, activeBuildId],
-  );
-
   async function handleBuild() {
     if (!projectId) {
       return;
