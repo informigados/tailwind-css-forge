@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import socket
 from pathlib import Path, PurePosixPath
 
 from app.utils.fs import ensure_directory
@@ -57,16 +58,21 @@ class SftpPublisher:
 
         client = paramiko.SSHClient()
         client.load_system_host_keys()
-        if host_keys_path.exists():
-            client.load_host_keys(str(host_keys_path))
+        self._load_local_host_keys(client, host_keys_path)
 
         host_key_policy = config.get("sftp_host_key_policy", "trust_on_first_use")
-        if host_key_policy == "strict":
-            client.set_missing_host_key_policy(paramiko.RejectPolicy())
-        elif host_key_policy == "trust_on_first_use":
-            client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        else:
+        if host_key_policy not in {"strict", "trust_on_first_use"}:
             raise RuntimeError("Politica de chave SFTP invalida.")
+        if host_key_policy == "trust_on_first_use":
+            self._seed_trust_on_first_use_host_key(
+                paramiko=paramiko,
+                host_keys_path=host_keys_path,
+                host=config["host"],
+                port=config["port"],
+            )
+            self._load_local_host_keys(client, host_keys_path)
+
+        client.set_missing_host_key_policy(paramiko.RejectPolicy())
 
         client.connect(
             hostname=config["host"],
@@ -79,11 +85,44 @@ class SftpPublisher:
             auth_timeout=15,
             banner_timeout=15,
         )
-        if host_key_policy == "trust_on_first_use":
-            client.save_host_keys(str(host_keys_path))
 
         sftp = client.open_sftp()
         return client, sftp
+
+    def _load_local_host_keys(self, client, host_keys_path: Path) -> None:
+        if host_keys_path.exists():
+            client.load_host_keys(str(host_keys_path))
+
+    def _seed_trust_on_first_use_host_key(self, *, paramiko, host_keys_path: Path, host: str, port: int) -> None:
+        host_key_name = self._known_hosts_host_name(host, port)
+        host_keys = paramiko.HostKeys()
+        if host_keys_path.exists():
+            host_keys.load(str(host_keys_path))
+            if host_key_name in host_keys:
+                return
+
+        sock = None
+        transport = None
+        try:
+            sock = socket.create_connection((host, port), timeout=15)
+            transport = paramiko.Transport(sock)
+            transport.start_client(timeout=15)
+            remote_host_key = transport.get_remote_server_key()
+        except Exception as exc:  # pragma: no cover - exercised with paramiko/socket integration
+            raise RuntimeError("Não foi possível validar a chave do host SFTP.") from exc
+        finally:
+            if transport is not None:
+                transport.close()
+            if sock is not None:
+                sock.close()
+
+        host_keys.add(host_key_name, remote_host_key.get_name(), remote_host_key)
+        host_keys.save(str(host_keys_path))
+
+    def _known_hosts_host_name(self, host: str, port: int) -> str:
+        if port == 22:
+            return host
+        return f"[{host}]:{port}"
 
     def _ensure_remote_dir(self, sftp, remote_path: str) -> None:
         normalized = remote_path.strip().strip("/") or ""

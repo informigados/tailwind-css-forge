@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
+from functools import lru_cache
 from pathlib import Path, PurePosixPath
 
 from fastapi import FastAPI
@@ -132,26 +133,46 @@ def _serve_frontend_asset(frontend_dist_path: Path, full_path: str):
         )
 
     if full_path:
-        if not _is_safe_frontend_path(full_path):
+        normalized_path = _normalize_frontend_path(full_path)
+        if normalized_path is None:
             return HTMLResponse("Not Found", status_code=404)
 
-        candidate = (frontend_dist_resolved / PurePosixPath(full_path)).resolve()
-        if candidate.is_file() and candidate.is_relative_to(frontend_dist_resolved):
+        candidate = _get_frontend_asset_index(str(frontend_dist_resolved)).get(normalized_path)
+        if candidate is not None:
             return FileResponse(candidate)
 
     return FileResponse(index_path)
 
 
 def _is_safe_frontend_path(full_path: str) -> bool:
+    return _normalize_frontend_path(full_path) is not None
+
+
+def _normalize_frontend_path(full_path: str) -> str | None:
     if not full_path or "\x00" in full_path:
-        return False
+        return None
 
     normalized = full_path.replace("\\", "/")
     pure_path = PurePosixPath(normalized)
     if pure_path.is_absolute():
-        return False
+        return None
 
-    return all(part not in {"", ".", ".."} for part in pure_path.parts)
+    if not pure_path.parts or any(part in {"", ".", ".."} for part in pure_path.parts):
+        return None
+
+    return pure_path.as_posix()
+
+
+@lru_cache(maxsize=8)
+def _get_frontend_asset_index(frontend_dist_path: str) -> dict[str, Path]:
+    frontend_dist_resolved = Path(frontend_dist_path)
+    asset_index: dict[str, Path] = {}
+    for file_path in frontend_dist_resolved.rglob("*"):
+        if not file_path.is_file():
+            continue
+        relative_path = file_path.relative_to(frontend_dist_resolved).as_posix()
+        asset_index[relative_path] = file_path.resolve()
+    return asset_index
 
 
 app = create_app()

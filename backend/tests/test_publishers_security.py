@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 from app.publishers.ftp_publisher import FtpPublisher
 from app.publishers.sftp_publisher import SftpPublisher
@@ -73,6 +74,7 @@ class FakeSshClient:
 class FakeParamikoModule:
     def __init__(self) -> None:
         self.clients: list[FakeSshClient] = []
+        self.host_keys_instances: list[FakeHostKeys] = []
 
     def SSHClient(self) -> FakeSshClient:
         client = FakeSshClient()
@@ -82,8 +84,55 @@ class FakeParamikoModule:
     def RejectPolicy(self) -> FakePolicy:
         return FakePolicy("reject")
 
-    def AutoAddPolicy(self) -> FakePolicy:
-        return FakePolicy("autoadd")
+    def HostKeys(self) -> "FakeHostKeys":
+        host_keys = FakeHostKeys()
+        self.host_keys_instances.append(host_keys)
+        return host_keys
+
+    def Transport(self, sock) -> "FakeTransport":
+        return FakeTransport(sock)
+
+
+class FakeHostKeys:
+    def __init__(self) -> None:
+        self.loaded_path: str | None = None
+        self.saved_path: str | None = None
+        self.entries: set[str] = set()
+        self.add_calls: list[tuple[str, str, object]] = []
+
+    def load(self, path: str) -> None:
+        self.loaded_path = path
+
+    def save(self, path: str) -> None:
+        self.saved_path = path
+
+    def add(self, host: str, key_type: str, key: object) -> None:
+        self.entries.add(host)
+        self.add_calls.append((host, key_type, key))
+
+    def __contains__(self, item: str) -> bool:
+        return item in self.entries
+
+
+class FakeRemoteHostKey:
+    def get_name(self) -> str:
+        return "ssh-ed25519"
+
+
+class FakeTransport:
+    def __init__(self, sock) -> None:
+        self.sock = sock
+        self.started = False
+        self.closed = False
+
+    def start_client(self, timeout: int) -> None:
+        self.started = True
+
+    def get_remote_server_key(self) -> FakeRemoteHostKey:
+        return FakeRemoteHostKey()
+
+    def close(self) -> None:
+        self.closed = True
 
 
 def test_ftp_publisher_uses_explicit_ftps_by_default(monkeypatch) -> None:
@@ -173,8 +222,14 @@ def test_sftp_publisher_supports_trust_on_first_use(monkeypatch, tmp_path: Path)
     fake_paramiko = FakeParamikoModule()
     monkeypatch.setitem(sys.modules, "paramiko", fake_paramiko)
     known_hosts = tmp_path / "ssh" / "known_hosts"
+    seed_calls: list[tuple[Path, str, int]] = []
 
     publisher = SftpPublisher()
+    monkeypatch.setattr(
+        publisher,
+        "_seed_trust_on_first_use_host_key",
+        lambda *, paramiko, host_keys_path, host, port: seed_calls.append((host_keys_path, host, port)),
+    )
     client, sftp = publisher._connect(
         {
             "host": "sftp.example.com",
@@ -187,7 +242,36 @@ def test_sftp_publisher_supports_trust_on_first_use(monkeypatch, tmp_path: Path)
     )
 
     calls = fake_paramiko.clients[0].calls
-    assert ("set_policy", "autoadd") in calls
-    assert ("save_host_keys", str(known_hosts)) in calls
+    assert ("set_policy", "reject") in calls
+    assert seed_calls == [(known_hosts, "sftp.example.com", 22)]
+    assert not any(call[0] == "save_host_keys" for call in calls)
     sftp.close()
     client.close()
+
+
+def test_sftp_tofu_seeds_known_hosts_before_connect(monkeypatch, tmp_path: Path) -> None:
+    fake_paramiko = FakeParamikoModule()
+    monkeypatch.setitem(sys.modules, "paramiko", fake_paramiko)
+    fake_socket = SimpleNamespace(close=lambda: None)
+    socket_calls: list[tuple[tuple[str, int], int]] = []
+
+    def fake_create_connection(address: tuple[str, int], timeout: int):
+        socket_calls.append((address, timeout))
+        return fake_socket
+
+    monkeypatch.setattr("app.publishers.sftp_publisher.socket.create_connection", fake_create_connection)
+
+    publisher = SftpPublisher()
+    known_hosts = tmp_path / "known_hosts"
+    publisher._seed_trust_on_first_use_host_key(
+        paramiko=fake_paramiko,
+        host_keys_path=known_hosts,
+        host="sftp.example.com",
+        port=2222,
+    )
+
+    host_keys = fake_paramiko.host_keys_instances[0]
+    assert socket_calls == [(("sftp.example.com", 2222), 15)]
+    assert host_keys.saved_path == str(known_hosts)
+    assert host_keys.add_calls
+    assert host_keys.add_calls[0][0] == "[sftp.example.com]:2222"
