@@ -305,7 +305,7 @@ Contributions are welcome. Please read [`CONTRIBUTING.md`](CONTRIBUTING.md) befo
 ## 👥 Authors
 
 - [INformigados](https://github.com/informigados)
-- [Alex Brito](https://github.com/AlexBritoDEV)
+- [Alex Brito](https://github.com/alexbritodev)
 
 ## 📄 License
 
