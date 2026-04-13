@@ -5,6 +5,7 @@ import subprocess
 import sys
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
+from typing import Any
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -19,13 +20,22 @@ def _is_within(path: Path, root: Path) -> bool:
         return False
 
 
-def _load_json_file(path: Path) -> dict[str, object]:
+def _load_json_file(path: Path) -> dict[str, Any]:
     try:
         return json.loads(path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise SystemExit(
             f"Invalid JSON in {path}: {exc.msg} (line {exc.lineno}, column {exc.colno})"
         ) from exc
+
+
+def _validated_python_executable() -> Path:
+    python_executable = Path(sys.executable).resolve()
+    if not python_executable.is_file():
+        raise SystemExit("Invalid Python interpreter path: expected an existing file.")
+    if python_executable.is_symlink():
+        raise SystemExit("Invalid Python interpreter path: symbolic links are not allowed.")
+    return python_executable
 
 
 def main() -> int:
@@ -114,9 +124,10 @@ def _validate_launcher_self_check(bundle_dir: Path) -> None:
     if not resolved_launcher_path.is_file() or not launcher_within_bundle:
         raise SystemExit("Invalid launcher path: expected launch_forge.py inside the bundle directory.")
 
+    python_executable = _validated_python_executable()
     completed = subprocess.run(
         [
-            sys.executable,
+            str(python_executable),
             str(resolved_launcher_path),
             "--self-check",
             "--json",
@@ -130,14 +141,12 @@ def _validate_launcher_self_check(bundle_dir: Path) -> None:
     if completed.returncode != 0:
         stderr_output = completed.stderr.strip()
         stdout_output = completed.stdout.strip()
-        if stderr_output and stdout_output:
-            error_output = f"stderr:\n{stderr_output}\nstdout:\n{stdout_output}"
-        elif stderr_output:
-            error_output = stderr_output
-        elif stdout_output:
-            error_output = stdout_output
-        else:
-            error_output = "Launcher self-check failed with no output."
+        parts = [
+            f"{label}:\n{value}"
+            for label, value in (("stderr", stderr_output), ("stdout", stdout_output))
+            if value
+        ]
+        error_output = "\n".join(parts) if parts else "Launcher self-check failed with no output."
         raise SystemExit(f"Launcher self-check failed: {error_output}")
 
     try:
