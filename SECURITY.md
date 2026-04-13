@@ -78,4 +78,19 @@ The following are generally out of scope unless they lead to a real security imp
 
 When security-relevant fixes are made, related documentation and validation flows should be updated together when appropriate.
 
+## 📌 Known Upstream Advisory Constraints
+
+As of **April 13, 2026**, the repository has one tracked advisory that cannot be fully resolved from this codebase alone:
+
+- `RUSTSEC-2024-0429` / `GHSA-wrw7-89jp-8q8g` (`glib::VariantStrIter`) in `desktop/src-tauri/Cargo.lock`
+- root cause: transitive dependency chain from `tauri` GTK stack (`gtk 0.18` -> `glib 0.18.5`)
+- current constraint: `tauri 2.10.3` resolves to `gtk ^0.18`, and no patched `glib 0.18.x` release exists on crates.io
+- status: tracked as upstream-blocked; update immediately when Tauri/GTK dependency line moves to a patched `glib` major/minor
+
+Operational mitigation:
+
+- keep weekly cargo dependency updates enabled in Dependabot
+- keep frontend and non-blocked Rust advisories patched immediately
+- review and re-check this advisory on every Tauri upgrade cycle
+
 Thank you for helping keep Tailwind CSS Forge safe for local development and future desktop distribution.
