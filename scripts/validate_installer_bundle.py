@@ -80,27 +80,43 @@ def validate_bundle(bundle_dir: Path) -> None:
 
 
 def _validate_launcher_self_check(bundle_dir: Path) -> None:
-    launcher_path = bundle_dir / "app" / "scripts" / "launch_forge.py"
+    resolved_bundle_dir = bundle_dir.resolve()
+    if not resolved_bundle_dir.is_dir():
+        raise SystemExit("Invalid bundle path: expected an existing directory.")
+
+    launcher_path = resolved_bundle_dir / "app" / "scripts" / "launch_forge.py"
+    resolved_launcher_path = launcher_path.resolve()
+    if not resolved_launcher_path.is_file() or not resolved_launcher_path.is_relative_to(resolved_bundle_dir):
+        raise SystemExit("Invalid launcher path: expected launch_forge.py inside the bundle directory.")
+
     completed = subprocess.run(
         [
             sys.executable,
-            str(launcher_path),
+            str(resolved_launcher_path),
             "--self-check",
             "--json",
             "--assert-ready",
         ],
-        cwd=bundle_dir,
+        cwd=resolved_bundle_dir,
         check=False,
         capture_output=True,
         text=True,
     )
     if completed.returncode != 0:
+        error_output = (
+            completed.stderr.strip()
+            or completed.stdout.strip()
+            or "Launcher self-check failed with no output."
+        )
         raise SystemExit(
             "Launcher self-check failed: "
-            f"{completed.stderr.strip() or completed.stdout.strip()}",
+            f"{error_output}",
         )
 
-    report = json.loads(completed.stdout)
+    try:
+        report = json.loads(completed.stdout)
+    except json.JSONDecodeError as exc:
+        raise SystemExit(f"Launcher self-check failed: invalid JSON output ({exc.msg}).") from exc
     if not report.get("installed_layout"):
         raise SystemExit("Invalid launcher self-check: staged bundle was not recognized as an installed layout.")
     if not report.get("ready"):
