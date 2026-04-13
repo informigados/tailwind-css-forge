@@ -11,6 +11,23 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_BUNDLE = REPO_ROOT / "build" / "installer-bundle"
 
 
+def _is_within(path: Path, root: Path) -> bool:
+    try:
+        path.relative_to(root)
+        return True
+    except ValueError:
+        return False
+
+
+def _load_json_file(path: Path) -> dict[str, object]:
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise SystemExit(
+            f"Invalid JSON in {path}: {exc.msg} (line {exc.lineno}, column {exc.colno})"
+        ) from exc
+
+
 def main() -> int:
     args = parse_args()
     bundle_dir = args.bundle.resolve()
@@ -56,8 +73,10 @@ def validate_bundle(bundle_dir: Path) -> None:
         missing_list = "\n".join(f"- {path}" for path in missing)
         raise SystemExit(f"Incomplete bundle. Missing files:\n{missing_list}")
 
-    manifest = json.loads((bundle_dir / "installer-manifest.json").read_text(encoding="utf-8"))
-    metadata = json.loads((bundle_dir / "forge-product.json").read_text(encoding="utf-8"))
+    manifest_path = bundle_dir / "installer-manifest.json"
+    metadata_path = bundle_dir / "forge-product.json"
+    manifest = _load_json_file(manifest_path)
+    metadata = _load_json_file(metadata_path)
     if manifest.get("app_name") != "Tailwind CSS Forge":
         raise SystemExit("Invalid manifest: incorrect app_name.")
     if manifest.get("version") != metadata.get("version"):
@@ -91,7 +110,8 @@ def _validate_launcher_self_check(bundle_dir: Path) -> None:
 
     launcher_path = scripts_dir / "launch_forge.py"
     resolved_launcher_path = launcher_path.resolve()
-    if not resolved_launcher_path.is_file() or not resolved_launcher_path.is_relative_to(resolved_bundle_dir):
+    launcher_within_bundle = _is_within(resolved_launcher_path, resolved_bundle_dir)
+    if not resolved_launcher_path.is_file() or not launcher_within_bundle:
         raise SystemExit("Invalid launcher path: expected launch_forge.py inside the bundle directory.")
 
     completed = subprocess.run(
@@ -118,10 +138,7 @@ def _validate_launcher_self_check(bundle_dir: Path) -> None:
             error_output = stdout_output
         else:
             error_output = "Launcher self-check failed with no output."
-        raise SystemExit(
-            "Launcher self-check failed: "
-            f"{error_output}",
-        )
+        raise SystemExit(f"Launcher self-check failed: {error_output}")
 
     try:
         report = json.loads(completed.stdout)
