@@ -11,6 +11,7 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_BUNDLE = REPO_ROOT / "build" / "installer-bundle"
 LAUNCHER_SELF_CHECK_TIMEOUT_SECONDS = 30
+PRODUCT_NAME = "Tailwind CSS Forge"
 
 
 def _is_within(path: Path, root: Path) -> bool:
@@ -50,7 +51,7 @@ def main() -> int:
 
 
 def parse_args() -> Namespace:
-    parser = ArgumentParser(description="Validates the installer bundle of Tailwind CSS Forge.")
+    parser = ArgumentParser(description=f"Validates the installer bundle of {PRODUCT_NAME}.")
     parser.add_argument(
         "--bundle",
         type=Path,
@@ -92,7 +93,7 @@ def validate_bundle(bundle_dir: Path) -> None:
     metadata_path = bundle_dir / "forge-product.json"
     manifest = _load_json_file(manifest_path)
     metadata = _load_json_file(metadata_path)
-    if manifest.get("app_name") != "Tailwind CSS Forge":
+    if manifest.get("app_name") != PRODUCT_NAME:
         raise SystemExit("Invalid manifest: incorrect app_name.")
     if manifest.get("version") != metadata.get("version"):
         raise SystemExit("Invalid manifest: version mismatch with product metadata.")
@@ -160,7 +161,11 @@ def _validate_launcher_self_check(bundle_dir: Path) -> None:
             for label, value in (("stderr", stderr_output), ("stdout", stdout_output))
             if value
         ]
-        error_output = "\n".join(parts) if parts else "Launcher self-check failed with no output."
+        error_output = (
+            "\n".join(parts)
+            if parts
+            else f"return code {completed.returncode} and no output."
+        )
         raise SystemExit(f"Launcher self-check failed: {error_output}")
 
     try:
