@@ -1,4 +1,4 @@
-# Tailwind CSS Forge
+# 🔥 Tailwind CSS Forge
 
 [![CI](https://img.shields.io/github/actions/workflow/status/AlexBritoDEV/tailwind-css-forge/backend-ci.yml?branch=main&label=CI)](https://github.com/AlexBritoDEV/tailwind-css-forge/actions/workflows/backend-ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)

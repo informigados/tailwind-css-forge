@@ -1,4 +1,4 @@
-# Contributing to Tailwind CSS Forge
+# 🤝 Contributing to Tailwind CSS Forge
 
 🤝 Thank you for considering a contribution.
 

@@ -1,4 +1,4 @@
-# Security Policy
+# 🛡️ Security Policy
 
 🔐 Tailwind CSS Forge handles local files, build pipelines, and deployment credentials. Security is part of the product, not an afterthought.
 
@@ -80,7 +80,7 @@ When security-relevant fixes are made, related documentation and validation flow
 
 ## 📌 Known Upstream Advisory Constraints
 
-As of **April 13, 2026**, the repository has one tracked advisory that cannot be fully resolved from this codebase alone:
+As of **Q2 2026**, the repository has one tracked advisory that cannot be fully resolved from this codebase alone:
 
 - `RUSTSEC-2024-0429` / `GHSA-wrw7-89jp-8q8g` (`glib::VariantStrIter`) in `desktop/src-tauri/Cargo.lock`
 - root cause: transitive dependency chain from `tauri` GTK stack (`gtk 0.18` -> `glib 0.18.5`)
