@@ -1,0 +1,15 @@
+name: tailwind-css-forge-codeql
+
+paths:
+  - backend
+  - desktop
+  - frontend
+  - scripts
+
+paths-ignore:
+  - backend/.venv/**
+  - build/**
+  - desktop/src-tauri/target/**
+  - desktop/src-tauri/vendor/**
+  - frontend/node_modules/**
+  - runtime/**
