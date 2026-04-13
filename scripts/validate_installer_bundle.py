@@ -15,17 +15,17 @@ def main() -> int:
     args = parse_args()
     bundle_dir = args.bundle.resolve()
     validate_bundle(bundle_dir)
-    print(f"Bundle valido: {bundle_dir}")
+    print(f"Bundle válido: {bundle_dir}")
     return 0
 
 
 def parse_args() -> Namespace:
-    parser = ArgumentParser(description="Valida o bundle installer-ready do Tailwind CSS Forge.")
+    parser = ArgumentParser(description="Válida o bundle installer-ready do Tailwind CSS Forge.")
     parser.add_argument(
         "--bundle",
         type=Path,
         default=DEFAULT_BUNDLE,
-        help="Diretorio do bundle staged para validar.",
+        help="Diretório do bundle staged para validar.",
     )
     return parser.parse_args()
 
@@ -53,14 +53,15 @@ def validate_bundle(bundle_dir: Path) -> None:
 
     missing = [str(path) for path in required_files if not path.exists()]
     if missing:
-        raise SystemExit(f"Bundle incompleto. Arquivos ausentes: {missing}")
+        missing_list = "\n".join(f"- {path}" for path in missing)
+        raise SystemExit(f"Bundle incompleto. Arquivos ausentes:\n{missing_list}")
 
     manifest = json.loads((bundle_dir / "installer-manifest.json").read_text(encoding="utf-8"))
     metadata = json.loads((bundle_dir / "forge-product.json").read_text(encoding="utf-8"))
     if manifest.get("app_name") != "Tailwind CSS Forge":
-        raise SystemExit("Manifesto invalido: app_name incorreto.")
+        raise SystemExit("Manifesto inválido: app_name incorreto.")
     if manifest.get("version") != metadata.get("version"):
-        raise SystemExit("Manifesto invalido: versao divergente do metadata do produto.")
+        raise SystemExit("Manifesto inválido: versão divergente do metadata do produto.")
 
     forbidden_paths = [
         bundle_dir / "app" / "backend" / "tests",
@@ -72,7 +73,7 @@ def validate_bundle(bundle_dir: Path) -> None:
     ]
     forbidden_found = [str(path) for path in forbidden_paths if path.exists()]
     if forbidden_found:
-        raise SystemExit(f"Bundle contem conteudo indevido: {forbidden_found}")
+        raise SystemExit(f"Bundle contém conteúdo indevido: {forbidden_found}")
 
     _validate_launcher_self_check(bundle_dir)
 
@@ -100,9 +101,9 @@ def _validate_launcher_self_check(bundle_dir: Path) -> None:
 
     report = json.loads(completed.stdout)
     if not report.get("installed_layout"):
-        raise SystemExit("Launcher self-check invalido: o bundle staged nao foi reconhecido como layout instalado.")
+        raise SystemExit("Launcher self-check inválido: o bundle staged não foi reconhecido como layout instalado.")
     if not report.get("ready"):
-        raise SystemExit("Launcher self-check invalido: o bundle staged nao foi marcado como pronto.")
+        raise SystemExit("Launcher self-check inválido: o bundle staged não foi marcado como pronto.")
 
 
 if __name__ == "__main__":
