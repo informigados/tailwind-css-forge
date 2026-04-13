@@ -30,19 +30,21 @@ def _load_json_file(path: Path) -> dict[str, Any]:
 
 
 def _validated_python_executable() -> Path:
-    python_executable = Path(sys.executable).resolve()
+    python_executable_path = Path(sys.executable)
+    if python_executable_path.is_symlink():
+        raise SystemExit("Invalid Python interpreter path: symbolic links are not allowed.")
+
+    python_executable = python_executable_path.resolve()
     if not python_executable.is_file():
         raise SystemExit("Invalid Python interpreter path: expected an existing file.")
-    if python_executable.is_symlink():
-        raise SystemExit("Invalid Python interpreter path: symbolic links are not allowed.")
     return python_executable
 
 
 def main() -> int:
     args = parse_args()
-    bundle_dir = args.bundle.resolve()
+    bundle_dir = args.bundle
     validate_bundle(bundle_dir)
-    print(f"Bundle valid: {bundle_dir}")
+    print(f"Bundle valid: {bundle_dir.resolve()}")
     return 0
 
 
@@ -58,6 +60,8 @@ def parse_args() -> Namespace:
 
 
 def validate_bundle(bundle_dir: Path) -> None:
+    _validate_launcher_self_check(bundle_dir)
+
     required_files = [
         bundle_dir / "forge-product.json",
         bundle_dir / "installer-manifest.json",
@@ -105,20 +109,22 @@ def validate_bundle(bundle_dir: Path) -> None:
         forbidden_list = "\n".join(f"- {path}" for path in forbidden_found)
         raise SystemExit(f"Bundle contains unexpected content:\n{forbidden_list}")
 
-    _validate_launcher_self_check(bundle_dir)
-
 
 def _validate_launcher_self_check(bundle_dir: Path) -> None:
-    resolved_bundle_dir = bundle_dir.resolve()
-    if not resolved_bundle_dir.is_dir():
+    if not bundle_dir.is_dir():
         raise SystemExit("Invalid bundle path: expected an existing directory.")
+    if bundle_dir.is_symlink():
+        raise SystemExit("Invalid bundle path: symbolic links are not allowed.")
 
-    app_dir = resolved_bundle_dir / "app"
+    app_dir = bundle_dir / "app"
     scripts_dir = app_dir / "scripts"
     if app_dir.is_symlink() or scripts_dir.is_symlink():
         raise SystemExit("Invalid launcher path: symbolic links are not allowed in launcher directories.")
 
+    resolved_bundle_dir = bundle_dir.resolve()
     launcher_path = scripts_dir / "launch_forge.py"
+    if launcher_path.is_symlink():
+        raise SystemExit("Invalid launcher path: symbolic links are not allowed.")
     resolved_launcher_path = launcher_path.resolve()
     launcher_within_bundle = _is_within(resolved_launcher_path, resolved_bundle_dir)
     if not resolved_launcher_path.is_file() or not launcher_within_bundle:
