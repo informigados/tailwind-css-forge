@@ -10,6 +10,7 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_BUNDLE = REPO_ROOT / "build" / "installer-bundle"
+LAUNCHER_SELF_CHECK_TIMEOUT_SECONDS = 30
 
 
 def _is_within(path: Path, root: Path) -> bool:
@@ -131,19 +132,26 @@ def _validate_launcher_self_check(bundle_dir: Path) -> None:
         raise SystemExit("Invalid launcher path: expected launch_forge.py inside the bundle directory.")
 
     python_executable = _validated_python_executable()
-    completed = subprocess.run(
-        [
-            str(python_executable),
-            str(resolved_launcher_path),
-            "--self-check",
-            "--json",
-            "--assert-ready",
-        ],
-        cwd=resolved_bundle_dir,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    try:
+        completed = subprocess.run(
+            [
+                str(python_executable),
+                str(resolved_launcher_path),
+                "--self-check",
+                "--json",
+                "--assert-ready",
+            ],
+            cwd=resolved_bundle_dir,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=LAUNCHER_SELF_CHECK_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise SystemExit(
+            "Launcher self-check failed: process timed out after "
+            f"{LAUNCHER_SELF_CHECK_TIMEOUT_SECONDS} seconds."
+        ) from exc
     if completed.returncode != 0:
         stderr_output = completed.stderr.strip()
         stdout_output = completed.stdout.strip()
