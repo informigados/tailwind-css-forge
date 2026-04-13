@@ -84,7 +84,12 @@ def _validate_launcher_self_check(bundle_dir: Path) -> None:
     if not resolved_bundle_dir.is_dir():
         raise SystemExit("Invalid bundle path: expected an existing directory.")
 
-    launcher_path = resolved_bundle_dir / "app" / "scripts" / "launch_forge.py"
+    app_dir = resolved_bundle_dir / "app"
+    scripts_dir = app_dir / "scripts"
+    if app_dir.is_symlink() or scripts_dir.is_symlink():
+        raise SystemExit("Invalid launcher path: symbolic links are not allowed in launcher directories.")
+
+    launcher_path = scripts_dir / "launch_forge.py"
     resolved_launcher_path = launcher_path.resolve()
     if not resolved_launcher_path.is_file() or not resolved_launcher_path.is_relative_to(resolved_bundle_dir):
         raise SystemExit("Invalid launcher path: expected launch_forge.py inside the bundle directory.")
@@ -103,11 +108,16 @@ def _validate_launcher_self_check(bundle_dir: Path) -> None:
         text=True,
     )
     if completed.returncode != 0:
-        error_output = (
-            completed.stderr.strip()
-            or completed.stdout.strip()
-            or "Launcher self-check failed with no output."
-        )
+        stderr_output = completed.stderr.strip()
+        stdout_output = completed.stdout.strip()
+        if stderr_output and stdout_output:
+            error_output = f"stderr:\n{stderr_output}\nstdout:\n{stdout_output}"
+        elif stderr_output:
+            error_output = stderr_output
+        elif stdout_output:
+            error_output = stdout_output
+        else:
+            error_output = "Launcher self-check failed with no output."
         raise SystemExit(
             "Launcher self-check failed: "
             f"{error_output}",
