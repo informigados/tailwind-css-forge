@@ -33,9 +33,6 @@ def _load_json_file(path: Path) -> dict[str, Any]:
 
 def _validated_python_executable() -> Path:
     python_executable_path = Path(sys.executable)
-    if python_executable_path.is_symlink():
-        raise SystemExit("Invalid Python interpreter path: symbolic links are not allowed.")
-
     python_executable = python_executable_path.resolve()
     if not python_executable.is_file():
         raise SystemExit("Invalid Python interpreter path: expected an existing file.")
@@ -113,15 +110,15 @@ def validate_bundle(bundle_dir: Path) -> None:
 
 
 def _validate_launcher_self_check(bundle_dir: Path) -> None:
-    if not bundle_dir.is_dir():
-        raise SystemExit("Invalid bundle path: expected an existing directory.")
     if bundle_dir.is_symlink():
         raise SystemExit("Invalid bundle path: symbolic links are not allowed.")
+    if not bundle_dir.is_dir():
+        raise SystemExit("Invalid bundle path: expected an existing directory.")
 
     app_dir = bundle_dir / "app"
     scripts_dir = app_dir / "scripts"
     if app_dir.is_symlink() or scripts_dir.is_symlink():
-        raise SystemExit("Invalid launcher path: symbolic links are not allowed in launcher directories.")
+        raise SystemExit("Invalid directory path: symbolic links are not allowed in app/scripts directories.")
 
     resolved_bundle_dir = bundle_dir.resolve()
     launcher_path = scripts_dir / "launch_forge.py"
