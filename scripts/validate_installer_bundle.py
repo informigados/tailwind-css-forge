@@ -50,12 +50,12 @@ def main() -> int:
 
 
 def parse_args() -> Namespace:
-    parser = ArgumentParser(description="Validates the installer-ready bundle of Tailwind CSS Forge.")
+    parser = ArgumentParser(description="Validates the installer bundle of Tailwind CSS Forge.")
     parser.add_argument(
         "--bundle",
         type=Path,
         default=DEFAULT_BUNDLE,
-        help="Directory of the staged bundle to validate.",
+        help="Directory of the installer bundle to validate.",
     )
     return parser.parse_args()
 
@@ -168,9 +168,11 @@ def _validate_launcher_self_check(bundle_dir: Path) -> None:
     except json.JSONDecodeError as exc:
         raise SystemExit(f"Launcher self-check failed: invalid JSON output ({exc.msg}).") from exc
     if not report.get("installed_layout"):
-        raise SystemExit("Invalid launcher self-check: staged bundle was not recognized as an installed layout.")
+        raise SystemExit(
+            "Invalid launcher self-check: installer bundle was not recognized as an installed layout."
+        )
     if not report.get("ready"):
-        raise SystemExit("Invalid launcher self-check: staged bundle was not marked as ready.")
+        raise SystemExit("Invalid launcher self-check: installer bundle was not marked as ready.")
 
 
 if __name__ == "__main__":
