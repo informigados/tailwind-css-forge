@@ -20,7 +20,7 @@ def main() -> int:
 
 
 def parse_args() -> Namespace:
-    parser = ArgumentParser(description="Válida o bundle installer-ready do Tailwind CSS Forge.")
+    parser = ArgumentParser(description="Valida o bundle installer-ready do Tailwind CSS Forge.")
     parser.add_argument(
         "--bundle",
         type=Path,

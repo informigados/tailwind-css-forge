@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)](#-quick-start)
 [![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?logo=node.js&logoColor=white)](#-quick-start)
-[![Desktop](https://img.shields.io/badge/Desktop-Tauri-24C8DB?logo=tauri&logoColor=white)](desktop/README.md)
+[![Desktop](https://img.shields.io/badge/Desktop-Tauri-24C8DB?logo=tauri&logoColor=white)](#-quick-start)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/informigados/tailwind-css-forge)
 
 🔥 Local build, conversion, packaging, publishing, and desktop-ready toolkit for Tailwind CSS projects across multiple generations.
