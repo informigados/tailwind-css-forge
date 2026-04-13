@@ -45,7 +45,6 @@ def validate_bundle(bundle_dir: Path) -> None:
         bundle_dir / "app" / "frontend" / "dist" / "index.html",
         bundle_dir / "app" / "scripts" / "launch_forge.py",
         bundle_dir / "app" / "scripts" / "forge_metadata.py",
-        bundle_dir / "app" / "installer" / "README.md",
         bundle_dir / "app" / "installer" / "pyinstaller" / "forge_launcher.spec",
         bundle_dir / "app" / "installer" / "pyinstaller" / "version_info.txt",
         bundle_dir / "app" / "installer" / "inno" / "forge.iss",
