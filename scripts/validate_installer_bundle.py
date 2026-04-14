@@ -130,7 +130,7 @@ def _validate_launcher_self_check(bundle_dir: Path) -> None:
     resolved_launcher_path = launcher_path.resolve()
     launcher_within_bundle = _is_within(resolved_launcher_path, resolved_bundle_dir)
     if not resolved_launcher_path.is_file():
-        raise SystemExit("Invalid launcher path: expected launch_forge.py to be an existing regular file.")
+        raise SystemExit("Invalid launcher path: expected launch_forge.py to be an existing file.")
     if not launcher_within_bundle:
         raise SystemExit("Invalid launcher path: launch_forge.py must be inside the bundle directory.")
 
@@ -176,10 +176,14 @@ def _validate_launcher_self_check(bundle_dir: Path) -> None:
         raise SystemExit(f"Launcher self-check failed: invalid JSON output ({exc.msg}).") from exc
     if not report.get("installed_layout"):
         raise SystemExit(
-            "Invalid launcher self-check: installer bundle was not recognized as an installed layout."
+            "Invalid launcher self-check: installer bundle was not recognized as an installed layout "
+            f"(installed_layout={report.get('installed_layout')!r}, report={report!r})."
         )
     if not report.get("ready"):
-        raise SystemExit("Invalid launcher self-check: installer bundle was not marked as ready.")
+        raise SystemExit(
+            "Invalid launcher self-check: installer bundle was not marked as ready "
+            f"(ready={report.get('ready')!r}, report={report!r})."
+        )
 
 
 if __name__ == "__main__":
