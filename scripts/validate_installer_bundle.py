@@ -12,6 +12,26 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_BUNDLE = REPO_ROOT / "build" / "installer-bundle"
 LAUNCHER_SELF_CHECK_TIMEOUT_SECONDS = 30
 PRODUCT_NAME = "Tailwind CSS Forge"
+PARSER_DESCRIPTION = "Validates the installer bundle of " + PRODUCT_NAME + "."
+REQUIRED_FILE_PARTS: tuple[tuple[str, ...], ...] = (
+    ("forge-product.json",),
+    ("installer-manifest.json",),
+    ("INSTALLER_READY.txt",),
+    ("start_forge.bat",),
+    ("app", "backend", "pyproject.toml"),
+    ("app", "backend", "app", "main.py"),
+    ("app", "desktop", "package.json"),
+    ("app", "desktop", "ui", "index.html"),
+    ("app", "desktop", "src-tauri", "Cargo.toml"),
+    ("app", "desktop", "src-tauri", "tauri.conf.json"),
+    ("app", "frontend", "dist", "index.html"),
+    ("app", "scripts", "launch_forge.py"),
+    ("app", "scripts", "forge_metadata.py"),
+    ("app", "installer", "pyinstaller", "forge_launcher.spec"),
+    ("app", "installer", "pyinstaller", "version_info.txt"),
+    ("app", "installer", "inno", "forge.iss"),
+    ("app", "installer", "inno", "forge.version.iss"),
+)
 
 
 def _is_within(path: Path, root: Path) -> bool:
@@ -48,7 +68,7 @@ def main() -> int:
 
 
 def parse_args() -> Namespace:
-    parser = ArgumentParser(description=f"Validates the installer bundle of {PRODUCT_NAME}.")
+    parser = ArgumentParser(description=PARSER_DESCRIPTION)
     parser.add_argument(
         "--bundle",
         type=Path,
@@ -61,25 +81,7 @@ def parse_args() -> Namespace:
 def validate_bundle(bundle_dir: Path) -> None:
     _validate_launcher_self_check(bundle_dir)
 
-    required_files = [
-        bundle_dir / "forge-product.json",
-        bundle_dir / "installer-manifest.json",
-        bundle_dir / "INSTALLER_READY.txt",
-        bundle_dir / "start_forge.bat",
-        bundle_dir / "app" / "backend" / "pyproject.toml",
-        bundle_dir / "app" / "backend" / "app" / "main.py",
-        bundle_dir / "app" / "desktop" / "package.json",
-        bundle_dir / "app" / "desktop" / "ui" / "index.html",
-        bundle_dir / "app" / "desktop" / "src-tauri" / "Cargo.toml",
-        bundle_dir / "app" / "desktop" / "src-tauri" / "tauri.conf.json",
-        bundle_dir / "app" / "frontend" / "dist" / "index.html",
-        bundle_dir / "app" / "scripts" / "launch_forge.py",
-        bundle_dir / "app" / "scripts" / "forge_metadata.py",
-        bundle_dir / "app" / "installer" / "pyinstaller" / "forge_launcher.spec",
-        bundle_dir / "app" / "installer" / "pyinstaller" / "version_info.txt",
-        bundle_dir / "app" / "installer" / "inno" / "forge.iss",
-        bundle_dir / "app" / "installer" / "inno" / "forge.version.iss",
-    ]
+    required_files = [bundle_dir.joinpath(*parts) for parts in REQUIRED_FILE_PARTS]
 
     missing = [str(path) for path in required_files if not path.exists()]
     if missing:
