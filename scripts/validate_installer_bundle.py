@@ -11,6 +11,7 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_BUNDLE = REPO_ROOT / "build" / "installer-bundle"
 LAUNCHER_SELF_CHECK_TIMEOUT_SECONDS = 30
+STDOUT_PREVIEW_LIMIT = 500
 PRODUCT_NAME = "Tailwind CSS Forge"
 PARSER_DESCRIPTION = f"Validates the installer bundle of {PRODUCT_NAME}."
 REQUIRED_FILE_PARTS: tuple[tuple[str, ...], ...] = (
@@ -52,8 +53,7 @@ def _load_json_file(path: Path) -> dict[str, Any]:
 
 
 def _validated_python_executable() -> Path:
-    python_executable_path = Path(sys.executable)
-    python_executable = python_executable_path.resolve()
+    python_executable = Path(sys.executable).resolve()
     if not python_executable.is_file():
         raise SystemExit("Invalid Python interpreter path: expected an existing file.")
     return python_executable
@@ -181,10 +181,9 @@ def _validate_launcher_self_check(bundle_dir: Path) -> None:
     try:
         report = json.loads(completed.stdout)
     except json.JSONDecodeError as exc:
-        stdout_preview_limit = 500
         stdout_preview = completed.stdout
-        if len(stdout_preview) > stdout_preview_limit:
-            stdout_preview = stdout_preview[:stdout_preview_limit] + "... [truncated]"
+        if len(stdout_preview) > STDOUT_PREVIEW_LIMIT:
+            stdout_preview = stdout_preview[:STDOUT_PREVIEW_LIMIT] + "... [truncated]"
         raise SystemExit(
             "Launcher self-check failed: invalid JSON output "
             f"({exc.msg}). stdout={stdout_preview!r}"
