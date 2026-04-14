@@ -122,7 +122,7 @@ def _validate_launcher_self_check(bundle_dir: Path) -> None:
     if app_dir.is_symlink() or scripts_dir.is_symlink():
         raise SystemExit(
             "Invalid directory path: symbolic links are not allowed for 'app' or "
-            "'app/scripts' directories."
+            "'scripts' directories."
         )
 
     resolved_bundle_dir = bundle_dir.resolve()
@@ -132,7 +132,10 @@ def _validate_launcher_self_check(bundle_dir: Path) -> None:
     resolved_launcher_path = launcher_path.resolve()
     launcher_within_bundle = _is_within(resolved_launcher_path, resolved_bundle_dir)
     if not resolved_launcher_path.is_file():
-        raise SystemExit("Invalid launcher path: expected launch_forge.py to be an existing file.")
+        raise SystemExit(
+            "Invalid launcher path: expected launch_forge.py to be an existing file at "
+            f"{resolved_launcher_path}."
+        )
     if not launcher_within_bundle:
         raise SystemExit("Invalid launcher path: launch_forge.py must be inside the bundle directory.")
 
