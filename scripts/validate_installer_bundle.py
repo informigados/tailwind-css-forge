@@ -202,15 +202,17 @@ def _validate_launcher_self_check(bundle_dir: Path) -> None:
         if isinstance(report, dict)
         else f"report_type={type(report).__name__!r}"
     )
-    if report.get("installed_layout") is not True:
+    installed_layout = report.get("installed_layout")
+    if not isinstance(installed_layout, bool) or not installed_layout:
         raise SystemExit(
             "Invalid launcher self-check: installer bundle was not recognized as an installed layout "
-            f"(installed_layout={report.get('installed_layout')!r}, {report_summary})."
+            f"(installed_layout={installed_layout!r}, {report_summary})."
         )
-    if report.get("ready") is not True:
+    ready = report.get("ready")
+    if not isinstance(ready, bool) or not ready:
         raise SystemExit(
             "Invalid launcher self-check: installer bundle was not marked as ready "
-            f"(ready={report.get('ready')!r}, {report_summary})."
+            f"(ready={ready!r}, {report_summary})."
         )
 
 
