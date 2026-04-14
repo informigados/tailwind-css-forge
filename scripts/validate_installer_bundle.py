@@ -118,7 +118,10 @@ def _validate_launcher_self_check(bundle_dir: Path) -> None:
     app_dir = bundle_dir / "app"
     scripts_dir = app_dir / "scripts"
     if app_dir.is_symlink() or scripts_dir.is_symlink():
-        raise SystemExit("Invalid directory path: symbolic links are not allowed in app/scripts directories.")
+        raise SystemExit(
+            "Invalid directory path: symbolic links are not allowed for 'app' or "
+            "'app/scripts' directories."
+        )
 
     resolved_bundle_dir = bundle_dir.resolve()
     launcher_path = scripts_dir / "launch_forge.py"
@@ -126,8 +129,10 @@ def _validate_launcher_self_check(bundle_dir: Path) -> None:
         raise SystemExit("Invalid launcher path: symbolic links are not allowed.")
     resolved_launcher_path = launcher_path.resolve()
     launcher_within_bundle = _is_within(resolved_launcher_path, resolved_bundle_dir)
-    if not resolved_launcher_path.is_file() or not launcher_within_bundle:
-        raise SystemExit("Invalid launcher path: expected launch_forge.py inside the bundle directory.")
+    if not resolved_launcher_path.is_file():
+        raise SystemExit("Invalid launcher path: expected launch_forge.py to be an existing regular file.")
+    if not launcher_within_bundle:
+        raise SystemExit("Invalid launcher path: launch_forge.py must be inside the bundle directory.")
 
     python_executable = _validated_python_executable()
     try:
