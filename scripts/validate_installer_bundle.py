@@ -45,7 +45,12 @@ def _is_within(path: Path, root: Path) -> bool:
 
 def _load_json_file(path: Path) -> dict[str, Any]:
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
+        contents = path.read_text(encoding="utf-8")
+    except OSError as exc:
+        raise SystemExit(f"Failed to read JSON file {path}: {exc}") from exc
+
+    try:
+        return json.loads(contents)
     except json.JSONDecodeError as exc:
         raise SystemExit(
             f"Invalid JSON in {path}: {exc.msg} (line {exc.lineno}, column {exc.colno})"
