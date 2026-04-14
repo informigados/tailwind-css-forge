@@ -52,6 +52,12 @@ def _load_json_file(path: Path) -> dict[str, Any]:
         ) from exc
 
 
+def _format_output_preview(output: str, limit: int = STDOUT_PREVIEW_LIMIT) -> str:
+    if len(output) > limit:
+        return output[:limit] + "... [truncated]"
+    return output
+
+
 def _validated_python_executable() -> Path:
     python_executable = Path(sys.executable).resolve()
     if not python_executable.is_file():
@@ -79,14 +85,14 @@ def parse_args() -> Namespace:
 
 
 def validate_bundle(bundle_dir: Path) -> None:
-    _validate_launcher_self_check(bundle_dir)
-
     required_files = [bundle_dir.joinpath(*parts) for parts in REQUIRED_FILE_PARTS]
 
     missing = [str(path) for path in required_files if not path.exists()]
     if missing:
         missing_list = "\n".join(f"- {path}" for path in missing)
         raise SystemExit(f"Incomplete bundle. Missing files:\n{missing_list}")
+
+    _validate_launcher_self_check(bundle_dir)
 
     manifest_path = bundle_dir / "installer-manifest.json"
     metadata_path = bundle_dir / "forge-product.json"
@@ -164,8 +170,8 @@ def _validate_launcher_self_check(bundle_dir: Path) -> None:
             f"{LAUNCHER_SELF_CHECK_TIMEOUT_SECONDS} seconds."
         ) from exc
     if completed.returncode != 0:
-        stderr_output = completed.stderr.strip()
-        stdout_output = completed.stdout.strip()
+        stderr_output = _format_output_preview(completed.stderr.strip())
+        stdout_output = _format_output_preview(completed.stdout.strip())
         parts = [
             f"{label}:\n{value}"
             for label, value in (("stderr", stderr_output), ("stdout", stdout_output))
@@ -181,9 +187,7 @@ def _validate_launcher_self_check(bundle_dir: Path) -> None:
     try:
         report = json.loads(completed.stdout)
     except json.JSONDecodeError as exc:
-        stdout_preview = completed.stdout
-        if len(stdout_preview) > STDOUT_PREVIEW_LIMIT:
-            stdout_preview = stdout_preview[:STDOUT_PREVIEW_LIMIT] + "... [truncated]"
+        stdout_preview = _format_output_preview(completed.stdout)
         raise SystemExit(
             "Launcher self-check failed: invalid JSON output "
             f"({exc.msg}). stdout={stdout_preview!r}"
