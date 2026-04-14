@@ -12,7 +12,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_BUNDLE = REPO_ROOT / "build" / "installer-bundle"
 LAUNCHER_SELF_CHECK_TIMEOUT_SECONDS = 30
 PRODUCT_NAME = "Tailwind CSS Forge"
-PARSER_DESCRIPTION = "Validates the installer bundle of " + PRODUCT_NAME + "."
+PARSER_DESCRIPTION = f"Validates the installer bundle of {PRODUCT_NAME}."
 REQUIRED_FILE_PARTS: tuple[tuple[str, ...], ...] = (
     ("forge-product.json",),
     ("installer-manifest.json",),
@@ -176,15 +176,20 @@ def _validate_launcher_self_check(bundle_dir: Path) -> None:
         report = json.loads(completed.stdout)
     except json.JSONDecodeError as exc:
         raise SystemExit(f"Launcher self-check failed: invalid JSON output ({exc.msg}).") from exc
+    report_summary = (
+        f"report_keys={sorted(report.keys())!r}"
+        if isinstance(report, dict)
+        else f"report_type={type(report).__name__!r}"
+    )
     if not report.get("installed_layout"):
         raise SystemExit(
             "Invalid launcher self-check: installer bundle was not recognized as an installed layout "
-            f"(installed_layout={report.get('installed_layout')!r}, report={report!r})."
+            f"(installed_layout={report.get('installed_layout')!r}, {report_summary})."
         )
     if not report.get("ready"):
         raise SystemExit(
             "Invalid launcher self-check: installer bundle was not marked as ready "
-            f"(ready={report.get('ready')!r}, report={report!r})."
+            f"(ready={report.get('ready')!r}, {report_summary})."
         )
 
 
