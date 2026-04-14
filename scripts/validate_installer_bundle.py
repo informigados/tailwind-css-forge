@@ -137,7 +137,10 @@ def _validate_launcher_self_check(bundle_dir: Path) -> None:
             f"{resolved_launcher_path}."
         )
     if not launcher_within_bundle:
-        raise SystemExit("Invalid launcher path: launch_forge.py must be inside the bundle directory.")
+        raise SystemExit(
+            "Invalid launcher path: launch_forge.py must be inside the bundle directory "
+            f"(launcher={resolved_launcher_path}, bundle={resolved_bundle_dir})."
+        )
 
     python_executable = _validated_python_executable()
     try:
@@ -178,7 +181,14 @@ def _validate_launcher_self_check(bundle_dir: Path) -> None:
     try:
         report = json.loads(completed.stdout)
     except json.JSONDecodeError as exc:
-        raise SystemExit(f"Launcher self-check failed: invalid JSON output ({exc.msg}).") from exc
+        stdout_preview_limit = 500
+        stdout_preview = completed.stdout
+        if len(stdout_preview) > stdout_preview_limit:
+            stdout_preview = stdout_preview[:stdout_preview_limit] + "... [truncated]"
+        raise SystemExit(
+            "Launcher self-check failed: invalid JSON output "
+            f"({exc.msg}). stdout={stdout_preview!r}"
+        ) from exc
     report_summary = (
         f"report_keys={sorted(report.keys())!r}"
         if isinstance(report, dict)
